@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,7 +34,10 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DragIndicator
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
@@ -49,24 +53,27 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -88,6 +95,7 @@ import com.fantask.theme.DuoPurpleShadow
 import com.fantask.theme.DuoRed
 import com.fantask.theme.DuoRedShadow
 import com.fantask.ui.components.DuoCard
+import kotlinx.coroutines.isActive
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,14 +117,62 @@ fun KanbanScreen(
         TaskStatus.DONE
     )
 
-    // Drag-and-drop state
+    val density = LocalDensity.current
+    val columnWidthDp = 290.dp
+    val columnSpacingDp = 14.dp
+    val boardPaddingDp = 12.dp
+
+    val columnWidthPx = with(density) { columnWidthDp.toPx() }
+    val columnSpacingPx = with(density) { columnSpacingDp.toPx() }
+    val boardPaddingPx = with(density) { boardPaddingDp.toPx() }
+    val edgeZonePx = with(density) { 70.dp.toPx() }
+    val maxScrollSpeedPx = with(density) { 14.dp.toPx() }
+
+    val scrollState = rememberScrollState()
+
+    // Container geometry tracking
+    var rootCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var containerWidthPx by remember { mutableFloatStateOf(0f) }
+
+    // Precise Drag-and-Drop state
     var draggedTask by remember { mutableStateOf<TaskEntity?>(null) }
-    var dragPosition by remember { mutableStateOf(Offset.Zero) }
-    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    var cardInitialOffsetInContainer by remember { mutableStateOf(Offset.Zero) }
+    var grabOffsetInCard by remember { mutableStateOf(Offset.Zero) }
+    var dragDelta by remember { mutableStateOf(Offset.Zero) }
+    var cardSize by remember { mutableStateOf(IntSize.Zero) }
     var hoveredStatus by remember { mutableStateOf<TaskStatus?>(null) }
 
-    // Column screen bounds storage for collision detection
-    val columnBounds = remember { mutableStateMapOf<TaskStatus, Rect>() }
+    // Helper to evaluate hovered status at current finger position
+    fun updateHoveredColumn() {
+        val fingerX = cardInitialOffsetInContainer.x + dragDelta.x + grabOffsetInCard.x
+        hoveredStatus = KanbanGeometry.calculateHoveredStatus(
+            fingerXInContainer = fingerX,
+            scrollOffset = scrollState.value,
+            columnWidthPx = columnWidthPx,
+            columnSpacingPx = columnSpacingPx,
+            boardPaddingStartPx = boardPaddingPx,
+            statuses = statuses
+        )
+    }
+
+    // Auto-scroll loop when finger is held near screen edges
+    LaunchedEffect(draggedTask) {
+        if (draggedTask == null) return@LaunchedEffect
+        while (isActive && draggedTask != null) {
+            val fingerX = cardInitialOffsetInContainer.x + dragDelta.x + grabOffsetInCard.x
+            val scrollDelta = KanbanGeometry.calculateEdgeScrollDelta(
+                fingerXInContainer = fingerX,
+                containerWidthPx = containerWidthPx,
+                edgeZonePx = edgeZonePx,
+                maxSpeedPx = maxScrollSpeedPx
+            )
+            if (scrollDelta != 0f) {
+                scrollState.scrollBy(scrollDelta)
+                updateHoveredColumn()
+            }
+            withFrameMillis { }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -162,14 +218,18 @@ fun KanbanScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .onGloballyPositioned { coordinates ->
+                    rootCoordinates = coordinates
+                    containerWidthPx = coordinates.size.width.toFloat()
+                }
         ) {
             // Horizontally Scrollable Board containing all 4 columns side by side
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    .horizontalScroll(scrollState)
+                    .padding(horizontal = boardPaddingDp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(columnSpacingDp)
             ) {
                 statuses.forEach { status ->
                     val columnTasks = tasks.filter { it.status == status }
@@ -178,20 +238,23 @@ fun KanbanScreen(
                     KanbanColumn(
                         status = status,
                         tasks = columnTasks,
+                        columnWidth = columnWidthDp,
                         isHovered = isHovered,
-                        onColumnBounds = { rect -> columnBounds[status] = rect },
-                        onStartDrag = { task, touchPos ->
-                            draggedTask = task
-                            dragPosition = touchPos
-                            dragOffset = Offset.Zero
+                        draggedTaskId = draggedTask?.id,
+                        onStartDrag = { task, localOffset, cardCoords ->
+                            val root = rootCoordinates
+                            if (root != null && cardCoords != null && root.isAttached && cardCoords.isAttached) {
+                                cardInitialOffsetInContainer = root.localPositionOf(cardCoords, Offset.Zero)
+                                grabOffsetInCard = localOffset
+                                dragDelta = Offset.Zero
+                                cardSize = cardCoords.size
+                                draggedTask = task
+                                updateHoveredColumn()
+                            }
                         },
                         onDrag = { delta ->
-                            dragOffset += delta
-                            val currentPos = dragPosition + dragOffset
-                            // Check which column contains currentPos
-                            hoveredStatus = columnBounds.entries.firstOrNull { (_, rect) ->
-                                rect.contains(currentPos)
-                            }?.key
+                            dragDelta += delta
+                            updateHoveredColumn()
                         },
                         onEndDrag = {
                             val targetStatus = hoveredStatus
@@ -204,7 +267,7 @@ fun KanbanScreen(
                                 }
                             }
                             draggedTask = null
-                            dragOffset = Offset.Zero
+                            dragDelta = Offset.Zero
                             hoveredStatus = null
                         },
                         onQuickMove = { task, newStatus ->
@@ -227,7 +290,7 @@ fun KanbanScreen(
                 }
             }
 
-            // Floating drag ghost (tactile lift overlay)
+            // Floating drag ghost (tactile zero-jump lift overlay pinned to finger)
             draggedTask?.let { task ->
                 val (cardColor, _) = when (task.difficulty) {
                     TaskDifficulty.EASY -> DuoGreen to DuoGreenShadow
@@ -236,36 +299,78 @@ fun KanbanScreen(
                     TaskDifficulty.SUPER_HARD -> DuoRed to DuoRedShadow
                 }
 
+                val currentCardWidth = if (cardSize.width > 0) with(density) { cardSize.width.toDp() } else columnWidthDp - 24.dp
+
                 Box(
                     modifier = Modifier
-                        .offset { IntOffset(dragOffset.x.roundToInt(), dragOffset.y.roundToInt()) }
+                        .offset {
+                            IntOffset(
+                                (cardInitialOffsetInContainer.x + dragDelta.x).roundToInt(),
+                                (cardInitialOffsetInContainer.y + dragDelta.y).roundToInt()
+                            )
+                        }
+                        .width(currentCardWidth)
                         .zIndex(100f)
                         .graphicsLayer {
-                            scaleX = 1.05f
-                            scaleY = 1.05f
-                            rotationZ = 3f
-                            alpha = 0.95f
+                            scaleX = 1.04f
+                            scaleY = 1.04f
+                            rotationZ = 2.5f
+                            alpha = 0.96f
                         }
-                        .padding(16.dp)
-                        .width(280.dp)
+                        .shadow(18.dp, RoundedCornerShape(18.dp))
                 ) {
                     DuoCard(
                         borderColor = cardColor,
-                        backgroundColor = MaterialTheme.colorScheme.surface,
-                        modifier = Modifier.shadow(16.dp, RoundedCornerShape(18.dp))
+                        backgroundColor = MaterialTheme.colorScheme.surface
                     ) {
-                        Text(
-                            text = task.name,
-                            fontWeight = FontWeight.Black,
-                            fontSize = 15.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Moving to ${hoveredStatus?.displayName ?: "..."}",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = cardColor
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = task.name,
+                                fontWeight = FontWeight.Black,
+                                fontSize = 15.sp,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = cardColor.copy(alpha = 0.15f)
+                            ) {
+                                Text(
+                                    text = "+${task.difficulty.points} pts",
+                                    color = cardColor,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 11.sp,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        val (statusBadgeColor, statusBadgeBg) = when (hoveredStatus) {
+                            TaskStatus.PENDING -> DuoPurple to DuoPurple.copy(alpha = 0.15f)
+                            TaskStatus.TODO -> DuoBlue to DuoBlue.copy(alpha = 0.15f)
+                            TaskStatus.IN_PROGRESS -> DuoFlame to DuoFlame.copy(alpha = 0.15f)
+                            TaskStatus.DONE -> DuoGreen to DuoGreen.copy(alpha = 0.15f)
+                            null -> MaterialTheme.colorScheme.onSurfaceVariant to MaterialTheme.colorScheme.surfaceVariant
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = statusBadgeBg
+                        ) {
+                            Text(
+                                text = "Drop in: ${hoveredStatus?.displayName ?: "..."}",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Black,
+                                color = statusBadgeColor,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -277,9 +382,10 @@ fun KanbanScreen(
 private fun KanbanColumn(
     status: TaskStatus,
     tasks: List<TaskEntity>,
+    columnWidth: androidx.compose.ui.unit.Dp,
     isHovered: Boolean,
-    onColumnBounds: (Rect) -> Unit,
-    onStartDrag: (TaskEntity, Offset) -> Unit,
+    draggedTaskId: Long?,
+    onStartDrag: (TaskEntity, Offset, LayoutCoordinates?) -> Unit,
     onDrag: (Offset) -> Unit,
     onEndDrag: () -> Unit,
     onQuickMove: (TaskEntity, TaskStatus) -> Unit,
@@ -296,14 +402,11 @@ private fun KanbanColumn(
 
     Box(
         modifier = Modifier
-            .width(290.dp)
+            .width(columnWidth)
             .fillMaxHeight()
-            .onGloballyPositioned { coordinates ->
-                onColumnBounds(coordinates.boundsInRoot())
-            }
             .clip(RoundedCornerShape(20.dp))
             .background(
-                if (isHovered) headerColor.copy(alpha = 0.15f)
+                if (isHovered) headerColor.copy(alpha = 0.16f)
                 else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
             )
             .border(
@@ -377,7 +480,8 @@ private fun KanbanColumn(
                     items(tasks, key = { it.id }) { task ->
                         KanbanDraggableCard(
                             task = task,
-                            onStartDrag = { touchPos -> onStartDrag(task, touchPos) },
+                            isDraggingCurrentCard = task.id == draggedTaskId,
+                            onStartDrag = { localOffset, coords -> onStartDrag(task, localOffset, coords) },
                             onDrag = onDrag,
                             onEndDrag = onEndDrag,
                             onQuickMove = { target -> onQuickMove(task, target) },
@@ -395,7 +499,8 @@ private fun KanbanColumn(
 @Composable
 private fun KanbanDraggableCard(
     task: TaskEntity,
-    onStartDrag: (Offset) -> Unit,
+    isDraggingCurrentCard: Boolean,
+    onStartDrag: (Offset, LayoutCoordinates?) -> Unit,
     onDrag: (Offset) -> Unit,
     onEndDrag: () -> Unit,
     onQuickMove: (TaskStatus) -> Unit,
@@ -406,6 +511,7 @@ private fun KanbanDraggableCard(
     var menuExpanded by remember { mutableStateOf(false) }
     val requirements = remember(task.requirementsJson) { task.getRequirements() }
     var expandedRequirements by remember { mutableStateOf(false) }
+    var cardCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     val (diffColor, diffBg) = when (task.difficulty) {
         TaskDifficulty.EASY -> DuoGreen to DuoGreen.copy(alpha = 0.12f)
@@ -417,9 +523,17 @@ private fun KanbanDraggableCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .onGloballyPositioned { coordinates ->
+                cardCoordinates = coordinates
+            }
+            .graphicsLayer {
+                alpha = if (isDraggingCurrentCard) 0.25f else 1.0f
+            }
             .pointerInput(task.id) {
                 detectDragGesturesAfterLongPress(
-                    onDragStart = { offset -> onStartDrag(offset) },
+                    onDragStart = { localOffset ->
+                        onStartDrag(localOffset, cardCoordinates)
+                    },
                     onDrag = { change, dragAmount ->
                         change.consume()
                         onDrag(dragAmount)
@@ -458,6 +572,7 @@ private fun KanbanDraggableCard(
                     )
                 }
 
+                // Options Menu
                 Box {
                     IconButton(
                         onClick = { menuExpanded = true },
@@ -470,6 +585,48 @@ private fun KanbanDraggableCard(
                         expanded = menuExpanded,
                         onDismissRequest = { menuExpanded = false }
                     ) {
+                        // Quick Move shortcuts
+                        if (task.status != TaskStatus.PENDING) {
+                            DropdownMenuItem(
+                                text = { Text("Move to Pending") },
+                                leadingIcon = { Icon(Icons.Default.HourglassEmpty, contentDescription = null, tint = DuoPurple) },
+                                onClick = {
+                                    menuExpanded = false
+                                    onQuickMove(TaskStatus.PENDING)
+                                }
+                            )
+                        }
+                        if (task.status != TaskStatus.TODO) {
+                            DropdownMenuItem(
+                                text = { Text("Move to To Do") },
+                                leadingIcon = { Icon(Icons.Default.ListAlt, contentDescription = null, tint = DuoBlue) },
+                                onClick = {
+                                    menuExpanded = false
+                                    onQuickMove(TaskStatus.TODO)
+                                }
+                            )
+                        }
+                        if (task.status != TaskStatus.IN_PROGRESS) {
+                            DropdownMenuItem(
+                                text = { Text("Move to In Progress") },
+                                leadingIcon = { Icon(Icons.Default.PlayArrow, contentDescription = null, tint = DuoFlame) },
+                                onClick = {
+                                    menuExpanded = false
+                                    onQuickMove(TaskStatus.IN_PROGRESS)
+                                }
+                            )
+                        }
+                        if (task.status != TaskStatus.DONE) {
+                            DropdownMenuItem(
+                                text = { Text("Move to Done") },
+                                leadingIcon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = DuoGreen) },
+                                onClick = {
+                                    menuExpanded = false
+                                    onQuickMove(TaskStatus.DONE)
+                                }
+                            )
+                        }
+
                         DropdownMenuItem(
                             text = { Text("Edit Task") },
                             leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
