@@ -1,55 +1,53 @@
 package com.fantask.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryDark,
-    onPrimary = OnPrimaryDark,
-    primaryContainer = PrimaryContainerDark,
-    onPrimaryContainer = OnPrimaryContainerDark,
-    secondary = SecondaryDark,
-    onSecondary = OnSecondaryDark,
-    secondaryContainer = SecondaryContainerDark,
-    onSecondaryContainer = OnSecondaryContainerDark,
-    background = BackgroundDark,
-    surface = SurfaceDark,
-    surfaceVariant = SurfaceVariantDark,
-    onBackground = OnBackgroundDark,
-    onSurface = OnSurfaceDark,
-    onSurfaceVariant = OnSurfaceVariantDark,
-    outline = OutlineDark
+private val DuolingoNightColorScheme = darkColorScheme(
+    primary = DuoGreen,
+    onPrimary = OnDuoGreen,
+    primaryContainer = DuoDarkSurfaceVariant,
+    onPrimaryContainer = DuoGreen,
+    secondary = DuoBlue,
+    onSecondary = OnDuoGreen,
+    secondaryContainer = DuoDarkSurfaceVariant,
+    onSecondaryContainer = DuoBlue,
+    tertiary = DuoGold,
+    background = DuoDarkBackground,
+    surface = DuoDarkSurface,
+    surfaceVariant = DuoDarkSurfaceVariant,
+    onBackground = DuoDarkTextPrimary,
+    onSurface = DuoDarkTextPrimary,
+    onSurfaceVariant = DuoDarkTextSecondary,
+    outline = DuoDarkBorder
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = PrimaryLight,
-    onPrimary = OnPrimaryLight,
-    primaryContainer = PrimaryContainerLight,
-    onPrimaryContainer = OnPrimaryContainerLight,
-    secondary = SecondaryLight,
-    onSecondary = OnSecondaryLight,
-    secondaryContainer = SecondaryContainerLight,
-    onSecondaryContainer = OnSecondaryContainerLight,
-    background = BackgroundLight,
-    surface = SurfaceLight,
-    surfaceVariant = SurfaceVariantLight,
-    onBackground = OnBackgroundLight,
-    onSurface = OnSurfaceLight,
-    onSurfaceVariant = OnSurfaceVariantLight,
-    outline = OutlineLight
+private val DuolingoLightColorScheme = lightColorScheme(
+    primary = DuoGreen,
+    onPrimary = OnDuoGreen,
+    primaryContainer = DuoGreenContainer,
+    onPrimaryContainer = DuoGreenShadow,
+    secondary = DuoBlue,
+    onSecondary = OnDuoGreen,
+    secondaryContainer = DuoBlueContainer,
+    onSecondaryContainer = DuoBlueShadow,
+    tertiary = DuoGold,
+    background = DuoLightBackground,
+    surface = DuoLightSurface,
+    surfaceVariant = DuoLightSurfaceVariant,
+    onBackground = DuoLightTextPrimary,
+    onSurface = DuoLightTextPrimary,
+    onSurfaceVariant = DuoLightTextSecondary,
+    outline = DuoLightBorder
 )
 
 @Composable
 fun FantaskTheme(
     themeMode: String = "SYSTEM", // "SYSTEM", "LIGHT", "DARK"
-    dynamicColor: Boolean = false, // disabled by default for consistent gamified aesthetics
+    dynamicColor: Boolean = false, // Keep consistent Duolingo branding
     content: @Composable () -> Unit
 ) {
     val isDark = when (themeMode.uppercase()) {
@@ -58,14 +56,7 @@ fun FantaskTheme(
         else -> isSystemInDarkTheme()
     }
 
-    val context = LocalContext.current
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        isDark -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = if (isDark) DuolingoNightColorScheme else DuolingoLightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,

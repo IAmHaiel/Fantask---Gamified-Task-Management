@@ -21,27 +21,20 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.Brightness7
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.OfflinePin
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -59,6 +52,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fantask.data.pref.UserPreferences
+import com.fantask.theme.DuoBlue
+import com.fantask.theme.DuoBlueShadow
+import com.fantask.theme.DuoGreen
+import com.fantask.theme.DuoGreenShadow
+import com.fantask.theme.DuoPurple
+import com.fantask.theme.DuoPurpleShadow
+import com.fantask.ui.components.DuoButton
+import com.fantask.ui.components.DuoCard
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,10 +76,8 @@ fun SettingsScreen(
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
     var showResetDialog by remember { mutableStateOf(false) }
 
-    // Export launcher
     val exportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
@@ -88,7 +87,6 @@ fun SettingsScreen(
         }
     }
 
-    // Import launcher
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
@@ -101,7 +99,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings", fontWeight = FontWeight.Bold) },
+                title = { Text("SETTINGS", fontWeight = FontWeight.Black, fontSize = 20.sp, letterSpacing = 1.sp) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
@@ -117,9 +115,11 @@ fun SettingsScreen(
         ) {
             // Theme Section
             item {
-                SettingsSectionCard(title = "Appearance & Theme") {
+                DuoCard(modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "APPEARANCE & THEME", fontWeight = FontWeight.Black, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Customize the interface style across all screens.",
+                        text = "Choose your preferred Duolingo style interface mode.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -127,8 +127,8 @@ fun SettingsScreen(
 
                     val options = listOf(
                         Triple("SYSTEM", "System Default", Icons.Default.SettingsBrightness),
-                        Triple("LIGHT", "Light Mode", Icons.Default.Brightness7),
-                        Triple("DARK", "Dark Mode", Icons.Default.Brightness4)
+                        Triple("LIGHT", "Duolingo Light Mode", Icons.Default.Brightness7),
+                        Triple("DARK", "Duolingo Night Mode", Icons.Default.Brightness4)
                     )
 
                     options.forEach { (mode, label, icon) ->
@@ -138,16 +138,16 @@ fun SettingsScreen(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
                                 .clickable { onThemeChange(mode) }
-                                .padding(vertical = 6.dp, horizontal = 4.dp)
+                                .padding(vertical = 6.dp)
                         ) {
                             RadioButton(
                                 selected = preferences.themeMode.equals(mode, ignoreCase = true),
                                 onClick = { onThemeChange(mode) }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp), tint = DuoGreen)
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = label, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                            Text(text = label, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
                     }
                 }
@@ -155,20 +155,18 @@ fun SettingsScreen(
 
             // Offline Notification Section
             item {
-                SettingsSectionCard(title = "Offline Reminders & Alarms") {
+                DuoCard(modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "OFFLINE REMINDERS & ALARMS", fontWeight = FontWeight.Black, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Task due dates and scheduled windows (e.g. 8AM-10AM) trigger offline local alarms.",
+                        text = "Task due dates and daily scheduled windows (e.g. 8:00 AM - 10:00 AM) run offline exact alarms.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        text = "Default Due Reminder Advance Time:",
-                        fontWeight = FontWeight.SemiBold,
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    Text("Reminder Advance Time:", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -182,27 +180,29 @@ fun SettingsScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    OutlinedButton(
+                    DuoButton(
+                        text = "TEST OFFLINE NOTIFICATION",
                         onClick = {
                             onTestNotification()
                             scope.launch { snackbarHostState.showSnackbar("Test offline notification posted!") }
                         },
+                        icon = Icons.Default.Notifications,
+                        color = DuoBlue,
+                        shadowColor = DuoBlueShadow,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(imageVector = Icons.Default.Notifications, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Send Test Offline Notification")
-                    }
+                    )
                 }
             }
 
             // Local Backup & Restore Section (Offline JSON)
             item {
-                SettingsSectionCard(title = "Local Data Backup & Restore") {
+                DuoCard(modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "OFFLINE BACKUP & RESTORE", fontWeight = FontWeight.Black, fontSize = 15.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Export all tasks, completion logs, streaks, rewards, and custom badges to a local JSON file. Completely offline and private.",
+                        text = "Export tasks, sub-task requirements, streaks, points, rewards, and custom badges to a local JSON file.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -213,61 +213,52 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        Button(
+                        DuoButton(
+                            text = "EXPORT",
                             onClick = { exportLauncher.launch("fantask_backup.json") },
+                            icon = Icons.Default.Download,
+                            color = DuoGreen,
+                            shadowColor = DuoGreenShadow,
                             modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Export Backup", fontSize = 12.sp)
-                        }
+                        )
 
-                        OutlinedButton(
+                        DuoButton(
+                            text = "IMPORT",
                             onClick = { importLauncher.launch(arrayOf("application/json")) },
+                            icon = Icons.Default.Upload,
+                            color = DuoPurple,
+                            shadowColor = DuoPurpleShadow,
                             modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Import Backup", fontSize = 12.sp)
-                        }
+                        )
                     }
                 }
             }
 
-            // App Info & Offline Assurance
+            // About Section
             item {
-                SettingsSectionCard(title = "About Fantask") {
+                DuoCard(modifier = Modifier.fillMaxWidth()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.OfflinePin,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
+                        Icon(Icons.Default.OfflinePin, contentDescription = null, tint = DuoGreen, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Offline by Design",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
-                        )
+                        Text(text = "100% PRIVATE & OFFLINE", fontWeight = FontWeight.Black, fontSize = 15.sp)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Fantask has zero network permissions (android.permission.INTERNET is omitted). Your data and schedules never leave your phone.",
+                        text = "Fantask has zero network code and zero internet permission. Your data never leaves your device.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    OutlinedButton(
+                    DuoButton(
+                        text = "RE-OPEN FIRST-RUN SETUP",
                         onClick = { showResetDialog = true },
+                        icon = Icons.Default.RestartAlt,
+                        color = DuoBlue,
+                        shadowColor = DuoBlueShadow,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Re-open First-Run Setup")
-                    }
+                    )
                 }
             }
         }
@@ -275,48 +266,27 @@ fun SettingsScreen(
         if (showResetDialog) {
             AlertDialog(
                 onDismissRequest = { showResetDialog = false },
-                title = { Text("Re-run Onboarding") },
-                text = { Text("Would you like to re-open the initial setup screen? Your existing tasks and points will remain safe.") },
+                title = { Text("Re-run Setup", fontWeight = FontWeight.Black) },
+                text = { Text("Would you like to revisit the initial setup screen? Your existing tasks and points will remain safe.") },
                 confirmButton = {
-                    Button(
+                    DuoButton(
+                        text = "RE-OPEN",
                         onClick = {
                             showResetDialog = false
                             onResetOnboarding()
-                        }
-                    ) {
-                        Text("Re-open")
-                    }
+                        },
+                        color = DuoBlue,
+                        shadowColor = DuoBlueShadow,
+                        modifier = Modifier.width(110.dp),
+                        height = 40.dp
+                    )
                 },
                 dismissButton = {
                     TextButton(onClick = { showResetDialog = false }) {
-                        Text("Cancel")
+                        Text("Cancel", fontWeight = FontWeight.Bold)
                     }
                 }
             )
-        }
-    }
-}
-
-@Composable
-private fun SettingsSectionCard(
-    title: String,
-    content: @Composable () -> Unit
-) {
-    Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = title,
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            content()
         }
     }
 }

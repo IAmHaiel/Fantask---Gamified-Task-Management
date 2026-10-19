@@ -31,10 +31,6 @@ import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.OfflinePin
 import androidx.compose.material.icons.filled.SettingsBrightness
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -54,8 +50,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.fantask.theme.PointsGold
-import com.fantask.theme.StreakFlame
+import com.fantask.theme.DuoBlue
+import com.fantask.theme.DuoFlame
+import com.fantask.theme.DuoGold
+import com.fantask.theme.DuoGreen
+import com.fantask.theme.DuoGreenShadow
+import com.fantask.ui.components.DuoButton
+import com.fantask.ui.components.DuoCard
 
 @Composable
 fun OnboardingScreen(
@@ -91,19 +92,19 @@ fun OnboardingScreen(
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // App Brand Icon
+                // Mascot Icon (Flame / Shield in Duolingo style)
                 Box(
                     modifier = Modifier
-                        .size(76.dp)
-                        .clip(RoundedCornerShape(22.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer),
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(26.dp))
+                        .background(DuoFlame.copy(alpha = 0.2f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocalFireDepartment,
                         contentDescription = null,
-                        tint = StreakFlame,
-                        modifier = Modifier.size(44.dp)
+                        tint = DuoFlame,
+                        modifier = Modifier.size(48.dp)
                     )
                 }
 
@@ -111,43 +112,45 @@ fun OnboardingScreen(
 
                 Text(
                     text = "FANTASK",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = DuoGreen
                 )
 
                 Text(
-                    text = "Gamified Offline Task Management",
+                    text = "Gamified Offline Tasks & Daily Streaks",
                     style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // Feature Bullets (Minimal & Clean)
+                // Feature Highlights
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    FeaturePill(icon = Icons.Default.OfflinePin, label = "100% Offline")
-                    FeaturePill(icon = Icons.Default.MonetizationOn, label = "Earn Points")
-                    FeaturePill(icon = Icons.Default.LocalFireDepartment, label = "Daily Streaks")
+                    DuoFeaturePill(icon = Icons.Default.OfflinePin, label = "100% Offline")
+                    DuoFeaturePill(icon = Icons.Default.MonetizationOn, label = "Earn Points")
+                    DuoFeaturePill(icon = Icons.Default.LocalFireDepartment, label = "Daily Streaks")
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(28.dp))
 
                 // Mandatory Theme Configuration
                 Text(
-                    text = "Configure Appearance",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = "CHOOSE YOUR LOOK",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.5.sp,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.align(Alignment.Start)
                 )
                 Text(
-                    text = "Select your preferred theme to start with. You can change this anytime.",
+                    text = "Select your preferred appearance mode:",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.Start)
@@ -155,9 +158,9 @@ fun OnboardingScreen(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                ThemeOptionCard(
-                    title = "Light Mode",
-                    description = "Clean, crisp, high-contrast daytime interface",
+                DuoThemeCard(
+                    title = "Duolingo Light Mode",
+                    description = "Crisp, bold, high-contrast daytime interface",
                     icon = Icons.Default.Brightness7,
                     isSelected = selectedTheme.equals("LIGHT", ignoreCase = true),
                     onClick = {
@@ -168,9 +171,9 @@ fun OnboardingScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                ThemeOptionCard(
-                    title = "Dark Mode",
-                    description = "Sleek, eye-friendly aesthetic tailored for night focus",
+                DuoThemeCard(
+                    title = "Duolingo Night Mode",
+                    description = "Sleek slate dark aesthetic tailored for evening focus",
                     icon = Icons.Default.Brightness4,
                     isSelected = selectedTheme.equals("DARK", ignoreCase = true),
                     onClick = {
@@ -181,9 +184,9 @@ fun OnboardingScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                ThemeOptionCard(
+                DuoThemeCard(
                     title = "System Default",
-                    description = "Follows your device system appearance automatically",
+                    description = "Matches your Android system theme automatically",
                     icon = Icons.Default.SettingsBrightness,
                     isSelected = selectedTheme.equals("SYSTEM", ignoreCase = true),
                     onClick = {
@@ -192,54 +195,34 @@ fun OnboardingScreen(
                     }
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // Offline Notification Permission Prompt
+                // Offline Notification Prompt
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    Card(
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        ),
-                        shape = RoundedCornerShape(14.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(14.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                    DuoCard(modifier = Modifier.fillMaxWidth()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Default.Notifications,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = DuoBlue,
                                 modifier = Modifier.size(28.dp)
                             )
-                            Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
                             Column(modifier = Modifier.weight(1f)) {
+                                Text("Offline Alarms & Reminders", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                 Text(
-                                    text = "Offline Alarms & Reminders",
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 14.sp
-                                )
-                                Text(
-                                    text = "Allow notifications to receive local scheduled reminders without internet.",
+                                    "Allow alerts to run your daily scheduled task reminders offline.",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
                             if (notificationPermissionGranted) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
+                                Icon(Icons.Default.Check, contentDescription = null, tint = DuoGreen)
                             } else {
                                 OutlinedButton(
-                                    onClick = {
-                                        permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                                    }
+                                    onClick = { permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }
                                 ) {
-                                    Text("Enable", fontSize = 12.sp)
+                                    Text("Enable", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -247,101 +230,84 @@ fun OnboardingScreen(
                 }
             }
 
-            // Get Started Button
+            // Duolingo 3D CTA Button
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 16.dp)
             ) {
-                Button(
+                DuoButton(
+                    text = "LET'S DO THIS!",
                     onClick = {
                         onThemeSelect(selectedTheme)
                         onCompleteOnboarding()
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(
-                        text = "Get Started",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                    color = DuoGreen,
+                    shadowColor = DuoGreenShadow,
+                    height = 54.dp,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }
 }
 
 @Composable
-private fun FeaturePill(icon: ImageVector, label: String) {
+private fun DuoFeaturePill(icon: ImageVector, label: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             .padding(horizontal = 10.dp, vertical = 6.dp)
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
+            tint = DuoGreen,
             modifier = Modifier.size(16.dp)
         )
         Spacer(modifier = Modifier.width(4.dp))
-        Text(text = label, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+        Text(text = label, fontSize = 11.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
-private fun ThemeOptionCard(
+private fun DuoThemeCard(
     title: String,
     description: String,
     icon: ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    Card(
+    DuoCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(14.dp)
-            ),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f) else MaterialTheme.colorScheme.surface
-        )
+            .clickable(onClick = onClick),
+        borderColor = if (isSelected) DuoGreen else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+        backgroundColor = if (isSelected) DuoGreen.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface
     ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant),
+                    .background(if (isSelected) DuoGreen else MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(22.dp)
+                    tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurface
+                    fontWeight = FontWeight.Black,
+                    fontSize = 15.sp
                 )
                 Text(
                     text = description,
@@ -353,7 +319,7 @@ private fun ThemeOptionCard(
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = DuoGreen,
                     modifier = Modifier.size(22.dp)
                 )
             }

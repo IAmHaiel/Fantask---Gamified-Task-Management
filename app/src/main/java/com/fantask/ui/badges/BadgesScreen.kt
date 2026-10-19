@@ -26,8 +26,6 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -51,7 +49,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.fantask.data.BadgeWithStatus
 import com.fantask.data.model.BadgeEntity
-import com.fantask.theme.PointsGold
+import com.fantask.theme.DuoBlue
+import com.fantask.theme.DuoGold
+import com.fantask.theme.DuoGreen
+import com.fantask.ui.components.DuoCard
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -69,17 +70,18 @@ fun BadgesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Achievements & Badges", fontWeight = FontWeight.Bold) },
+                title = { Text("ACHIEVEMENTS", fontWeight = FontWeight.Black, fontSize = 20.sp, letterSpacing = 1.sp) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNewBadgeClick,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                containerColor = DuoBlue,
+                contentColor = Color.White,
+                shape = CircleShape
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Create Custom Badge")
+                Icon(Icons.Default.Add, contentDescription = "Create Badge")
             }
         },
         modifier = modifier
@@ -91,50 +93,46 @@ fun BadgesScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Unlocked Overview Header
+            // Duolingo Mastery Trophy Banner
             item {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = PointsGold.copy(alpha = 0.12f)),
-                    modifier = Modifier.fillMaxWidth()
+                DuoCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    borderColor = DuoGold.copy(alpha = 0.6f),
+                    backgroundColor = DuoGold.copy(alpha = 0.12f)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(18.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(50.dp)
                                 .clip(CircleShape)
-                                .background(PointsGold.copy(alpha = 0.2f)),
+                                .background(DuoGold.copy(alpha = 0.2f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.EmojiEvents,
                                 contentDescription = null,
-                                tint = PointsGold,
-                                modifier = Modifier.size(30.dp)
+                                tint = DuoGold,
+                                modifier = Modifier.size(32.dp)
                             )
                         }
                         Spacer(modifier = Modifier.width(14.dp))
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "$unlockedCount / ${badges.size} Badges Unlocked",
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 16.sp
+                                text = "$unlockedCount / ${badges.size} BADGES UNLOCKED",
+                                fontWeight = FontWeight.Black,
+                                fontSize = 15.sp,
+                                letterSpacing = 0.5.sp
                             )
                             val progressFloat = if (badges.isNotEmpty()) unlockedCount.toFloat() / badges.size.toFloat() else 0f
                             Spacer(modifier = Modifier.height(6.dp))
                             LinearProgressIndicator(
                                 progress = { progressFloat },
-                                color = PointsGold,
+                                color = DuoGold,
                                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(6.dp)
-                                    .clip(RoundedCornerShape(3.dp))
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp))
                             )
                         }
                     }
@@ -143,20 +141,14 @@ fun BadgesScreen(
 
             // Badges List
             items(badges, key = { it.badge.id }) { item ->
-                BadgeCard(
-                    badgeWithStatus = item,
-                    onDelete = { onDeleteBadge(item.badge) }
-                )
+                BadgeTile(badgeWithStatus = item, onDelete = { onDeleteBadge(item.badge) })
             }
         }
     }
 }
 
 @Composable
-private fun BadgeCard(
-    badgeWithStatus: BadgeWithStatus,
-    onDelete: () -> Unit
-) {
+private fun BadgeTile(badgeWithStatus: BadgeWithStatus, onDelete: () -> Unit) {
     val badge = badgeWithStatus.badge
     val isUnlocked = badgeWithStatus.isUnlocked
     val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
@@ -169,59 +161,53 @@ private fun BadgeCard(
         else -> Icons.Default.Star
     }
 
-    Card(
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isUnlocked) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isUnlocked) 1.dp else 0.dp),
-        modifier = Modifier.fillMaxWidth()
+    DuoCard(
+        modifier = Modifier.fillMaxWidth(),
+        borderColor = if (isUnlocked) DuoGold.copy(alpha = 0.6f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+        backgroundColor = if (isUnlocked) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Icon
             Box(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isUnlocked) PointsGold.copy(alpha = 0.18f) else MaterialTheme.colorScheme.surfaceVariant
+                        if (isUnlocked) DuoGold.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceVariant
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = if (isUnlocked) iconVector else Icons.Default.Lock,
                     contentDescription = null,
-                    tint = if (isUnlocked) PointsGold else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                    modifier = Modifier.size(24.dp)
+                    tint = if (isUnlocked) DuoGold else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                    modifier = Modifier.size(26.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = badge.name,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Black,
                         fontSize = 15.sp,
-                        color = if (isUnlocked) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        color = if (isUnlocked) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                     if (!badge.isPreset) {
                         Spacer(modifier = Modifier.width(6.dp))
                         Surface(
                             shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.primaryContainer
+                            color = DuoBlue.copy(alpha = 0.15f)
                         ) {
                             Text(
-                                text = "Custom",
+                                text = "CUSTOM",
                                 fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                fontWeight = FontWeight.Black,
+                                color = DuoBlue,
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
                             )
                         }
@@ -234,50 +220,46 @@ private fun BadgeCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 if (isUnlocked) {
                     val dateStr = badgeWithStatus.unlockedAt?.let { dateFormat.format(Date(it)) } ?: "Completed"
                     Text(
                         text = "Unlocked on $dateStr",
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = PointsGold
+                        fontWeight = FontWeight.Bold,
+                        color = DuoGold
                     )
                 } else {
-                    // Progress bar towards requirement
                     val current = badgeWithStatus.currentProgress
                     val target = badge.threshold
                     val frac = if (target > 0) minOf(1f, current.toFloat() / target.toFloat()) else 0f
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         LinearProgressIndicator(
                             progress = { frac },
-                            color = MaterialTheme.colorScheme.primary,
+                            color = DuoGreen,
                             trackColor = MaterialTheme.colorScheme.surfaceVariant,
                             modifier = Modifier
                                 .weight(1f)
-                                .height(4.dp)
-                                .clip(RoundedCornerShape(2.dp))
+                                .height(6.dp)
+                                .clip(RoundedCornerShape(3.dp))
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "$current / $target",
                             fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
 
-            // If it is a user-created custom badge, allow deleting it
             if (!badge.isPreset) {
                 IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete Badge",
+                        contentDescription = "Delete",
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
                         modifier = Modifier.size(18.dp)
                     )

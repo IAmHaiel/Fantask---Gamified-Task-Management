@@ -110,6 +110,7 @@ fun MainNavigation() {
                     tasks = uiState.tasks,
                     onMoveTask = { task, status -> viewModel.moveTask(task, status) },
                     onRequestCompleteTask = { task -> viewModel.requestCompleteTask(task) },
+                    onSaveTask = { task -> viewModel.saveTask(task) },
                     onEditTask = { task -> viewModel.openEditTaskDialog(task) },
                     onDeleteTask = { task -> viewModel.deleteTask(task) },
                     onNewTaskClick = { viewModel.openCreateTaskDialog() },
@@ -154,7 +155,7 @@ fun MainNavigation() {
         if (uiState.taskToConfirm != null) {
             TaskConfirmationDialog(
                 task = uiState.taskToConfirm!!,
-                onConfirm = { viewModel.confirmCompleteTask() },
+                onConfirm = { updatedTask -> viewModel.confirmCompleteTask(updatedTask) },
                 onDismiss = { viewModel.dismissTaskConfirmation() }
             )
         }

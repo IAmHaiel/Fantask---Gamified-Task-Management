@@ -118,15 +118,34 @@ class AlarmScheduler(private val context: Context) {
         }
     }
 
+    companion object {
+        fun parseTimeString(timeString: String): Pair<Int, Int>? {
+            val trimmed = timeString.trim()
+            val isPm = trimmed.endsWith("PM", ignoreCase = true)
+            val isAm = trimmed.endsWith("AM", ignoreCase = true)
+            val cleanTime = trimmed.replace("AM", "", ignoreCase = true)
+                .replace("PM", "", ignoreCase = true)
+                .trim()
+
+            val parts = cleanTime.split(":")
+            if (parts.size != 2) return null
+            var hour = parts[0].trim().toIntOrNull() ?: return null
+            val minute = parts[1].trim().toIntOrNull() ?: return null
+
+            if (isPm && hour < 12) hour += 12
+            if (isAm && hour == 12) hour = 0
+
+            if (hour !in 0..23 || minute !in 0..59) return null
+            return hour to minute
+        }
+    }
+
     fun calculateNextOccurrence(
         timeString: String,
         recurrenceType: RecurrenceType,
         customDaysBitmask: Int
     ): Long? {
-        val parts = timeString.split(":")
-        if (parts.size != 2) return null
-        val hour = parts[0].toIntOrNull() ?: return null
-        val minute = parts[1].toIntOrNull() ?: return null
+        val (hour, minute) = parseTimeString(timeString) ?: return null
 
         val now = LocalDateTime.now()
         var candidate = LocalDateTime.of(LocalDate.now(), LocalTime.of(hour, minute, 0))

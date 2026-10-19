@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
         BadgeEntity::class,
         BadgeUnlockEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class FantaskDatabase : RoomDatabase() {
@@ -46,7 +46,8 @@ abstract class FantaskDatabase : RoomDatabase() {
                     context.applicationContext,
                     FantaskDatabase::class.java,
                     "fantask.db"
-                ).addCallback(object : Callback() {
+                ).fallbackToDestructiveMigration()
+                .addCallback(object : Callback() {
                     override fun onCreate(db: SupportSQLiteDatabase) {
                         super.onCreate(db)
                         CoroutineScope(Dispatchers.IO).launch {

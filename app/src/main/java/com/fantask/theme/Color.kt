@@ -2,49 +2,53 @@ package com.fantask.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Theme Palette
-val PrimaryLight = Color(0xFF3F51B5)
-val OnPrimaryLight = Color(0xFFFFFFFF)
-val PrimaryContainerLight = Color(0xFFE8EAF6)
-val OnPrimaryContainerLight = Color(0xFF1A237E)
+// Duolingo Signature Color System
+val DuoGreen = Color(0xFF58CC02)
+val DuoGreenShadow = Color(0xFF58A700)
+val DuoGreenContainer = Color(0xFFD7FFB8)
+val OnDuoGreen = Color(0xFFFFFFFF)
 
-val SecondaryLight = Color(0xFF00897B)
-val OnSecondaryLight = Color(0xFFFFFFFF)
-val SecondaryContainerLight = Color(0xFFE0F2F1)
-val OnSecondaryContainerLight = Color(0xFF004D40)
+val DuoGold = Color(0xFFFFC800)
+val DuoGoldShadow = Color(0xFFE5A500)
+val DuoGoldContainer = Color(0xFFFFF5CC)
+val OnDuoGold = Color(0xFF4B4B4B)
 
-val BackgroundLight = Color(0xFFF8F9FA)
-val SurfaceLight = Color(0xFFFFFFFF)
-val SurfaceVariantLight = Color(0xFFF1F3F5)
-val OnBackgroundLight = Color(0xFF1C1B1F)
-val OnSurfaceLight = Color(0xFF1C1B1F)
-val OnSurfaceVariantLight = Color(0xFF49454F)
-val OutlineLight = Color(0xFFE0E0E0)
+val DuoFlame = Color(0xFFFF9600)
+val DuoFlameShadow = Color(0xFFE57300)
+val DuoFlameContainer = Color(0xFFFFEAD1)
 
-// Dark Theme Palette
-val PrimaryDark = Color(0xFF9FA8DA)
-val OnPrimaryDark = Color(0xFF1A237E)
-val PrimaryContainerDark = Color(0xFF283593)
-val OnPrimaryContainerDark = Color(0xFFE8EAF6)
+val DuoBlue = Color(0xFF1CB0F6)
+val DuoBlueShadow = Color(0xFF1899D6)
+val DuoBlueContainer = Color(0xFFDDF4FF)
 
-val SecondaryDark = Color(0xFF80CBC4)
-val OnSecondaryDark = Color(0xFF004D40)
-val SecondaryContainerDark = Color(0xFF00695C)
-val OnSecondaryContainerDark = Color(0xFFE0F2F1)
+val DuoPurple = Color(0xFFCE82FF)
+val DuoPurpleShadow = Color(0xFFA55FE5)
+val DuoPurpleContainer = Color(0xFFF5E5FF)
 
-val BackgroundDark = Color(0xFF121212)
-val SurfaceDark = Color(0xFF1E1E1E)
-val SurfaceVariantDark = Color(0xFF2C2C2C)
-val OnBackgroundDark = Color(0xFFE6E1E5)
-val OnSurfaceDark = Color(0xFFE6E1E5)
-val OnSurfaceVariantDark = Color(0xFFCAC4D0)
-val OutlineDark = Color(0xFF3A3A3C)
+val DuoRed = Color(0xFFFF4B4B)
+val DuoRedShadow = Color(0xFFEA2B2B)
+val DuoRedContainer = Color(0xFFFFDCDC)
 
-// Gamification & Difficulty Accent Colors
-val PointsGold = Color(0xFFFFB300)
-val StreakFlame = Color(0xFFFF5722)
+// Duolingo Light Theme
+val DuoLightBackground = Color(0xFFF7F7F7)
+val DuoLightSurface = Color(0xFFFFFFFF)
+val DuoLightSurfaceVariant = Color(0xFFEFEFEF)
+val DuoLightBorder = Color(0xFFE5E5E5)
+val DuoLightTextPrimary = Color(0xFF3C3C3C)
+val DuoLightTextSecondary = Color(0xFF777777)
 
-val EasyGreen = Color(0xFF43A047)
-val MediumBlue = Color(0xFF1E88E5)
-val HardPurple = Color(0xFF8E24AA)
-val SuperHardRed = Color(0xFFE53935)
+// Duolingo Night Mode
+val DuoDarkBackground = Color(0xFF131F24)
+val DuoDarkSurface = Color(0xFF18282F)
+val DuoDarkSurfaceVariant = Color(0xFF20313A)
+val DuoDarkBorder = Color(0xFF2B3D47)
+val DuoDarkTextPrimary = Color(0xFFFFFFFF)
+val DuoDarkTextSecondary = Color(0xFFAFAFAF)
+
+// Legacy alias mappings for difficulty chips & gamification
+val PointsGold = DuoGold
+val StreakFlame = DuoFlame
+val EasyGreen = DuoGreen
+val MediumBlue = DuoBlue
+val HardPurple = DuoPurple
+val SuperHardRed = DuoRed

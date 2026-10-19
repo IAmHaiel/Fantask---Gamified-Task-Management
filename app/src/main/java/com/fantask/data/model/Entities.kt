@@ -6,6 +6,13 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class TaskRequirement(
+    val id: String = java.util.UUID.randomUUID().toString(),
+    val text: String,
+    val isDone: Boolean = false
+)
+
+@Serializable
 @Entity(
     tableName = "tasks",
     indices = [
@@ -19,6 +26,7 @@ data class TaskEntity(
     val id: Long = 0,
     val name: String,
     val description: String = "",
+    val requirementsJson: String = "[]",
     val dueDate: Long? = null,
     val difficulty: TaskDifficulty = TaskDifficulty.EASY,
     val priority: TaskPriority = TaskPriority.MEDIUM,
@@ -27,11 +35,30 @@ data class TaskEntity(
     val pointsAwarded: Int = 0,
     val recurrenceType: RecurrenceType = RecurrenceType.NONE,
     val recurrenceDays: Int = 0, // Bitmask: Mon=1, Tue=2, Wed=4, Thu=8, Fri=16, Sat=32, Sun=64
-    val scheduledStartTime: String? = null, // e.g. "08:00"
-    val scheduledEndTime: String? = null,   // e.g. "10:00"
+    val scheduledStartTime: String? = null, // e.g. "08:00 AM"
+    val scheduledEndTime: String? = null,   // e.g. "10:00 AM"
     val scheduleEnabled: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
+
+fun TaskEntity.getRequirements(): List<TaskRequirement> {
+    return try {
+        if (requirementsJson.isBlank()) emptyList()
+        else kotlinx.serialization.json.Json.decodeFromString(requirementsJson)
+    } catch (_: Exception) {
+        emptyList()
+    }
+}
+
+fun TaskEntity.withRequirements(requirements: List<TaskRequirement>): TaskEntity {
+    val jsonString = kotlinx.serialization.json.Json.encodeToString(requirements)
+    return this.copy(requirementsJson = jsonString)
+}
+
+fun TaskEntity.areAllRequirementsDone(): Boolean {
+    val list = getRequirements()
+    return list.isEmpty() || list.all { it.isDone }
+}
 
 @Serializable
 @Entity(

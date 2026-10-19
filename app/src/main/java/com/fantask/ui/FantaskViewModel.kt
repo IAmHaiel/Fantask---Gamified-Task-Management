@@ -146,8 +146,8 @@ class FantaskViewModel(
         _uiStateInternal.value = _uiStateInternal.value.copy(taskToConfirm = null)
     }
 
-    fun confirmCompleteTask() {
-        val task = _uiStateInternal.value.taskToConfirm ?: return
+    fun confirmCompleteTask(updatedTask: TaskEntity? = null) {
+        val task = updatedTask ?: _uiStateInternal.value.taskToConfirm ?: return
         viewModelScope.launch {
             alarmScheduler.cancelTaskAlarms(task.id)
             val newBadges = repository.completeTask(task)
