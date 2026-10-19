@@ -90,6 +90,7 @@ import com.fantask.theme.DuoFlame
 import com.fantask.theme.DuoGold
 import com.fantask.theme.DuoGreen
 import com.fantask.theme.DuoGreenShadow
+import com.fantask.theme.DuoGreenText
 import com.fantask.theme.DuoPurple
 import com.fantask.theme.DuoPurpleShadow
 import com.fantask.theme.DuoRed
@@ -514,7 +515,7 @@ private fun KanbanDraggableCard(
     var cardCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
     val (diffColor, diffBg) = when (task.difficulty) {
-        TaskDifficulty.EASY -> DuoGreen to DuoGreen.copy(alpha = 0.12f)
+        TaskDifficulty.EASY -> DuoGreenText to DuoGreen.copy(alpha = 0.18f)
         TaskDifficulty.MEDIUM -> DuoBlue to DuoBlue.copy(alpha = 0.12f)
         TaskDifficulty.HARD -> DuoPurple to DuoPurple.copy(alpha = 0.12f)
         TaskDifficulty.SUPER_HARD -> DuoRed to DuoRed.copy(alpha = 0.12f)

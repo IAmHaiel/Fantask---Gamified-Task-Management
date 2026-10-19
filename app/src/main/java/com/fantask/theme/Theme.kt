@@ -5,14 +5,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 private val DuolingoNightColorScheme = darkColorScheme(
-    primary = DuoGreen,
-    onPrimary = OnDuoGreen,
-    primaryContainer = DuoDarkSurfaceVariant,
-    onPrimaryContainer = DuoGreen,
+    primary = DuoDarkGreen,
+    onPrimary = OnDuoDarkGreen,
+    primaryContainer = DuoDarkGreenContainer,
+    onPrimaryContainer = DuoDarkGreenText,
     secondary = DuoBlue,
-    onSecondary = OnDuoGreen,
+    onSecondary = Color.White,
     secondaryContainer = DuoDarkSurfaceVariant,
     onSecondaryContainer = DuoBlue,
     tertiary = DuoGold,
@@ -26,12 +27,12 @@ private val DuolingoNightColorScheme = darkColorScheme(
 )
 
 private val DuolingoLightColorScheme = lightColorScheme(
-    primary = DuoGreen,
-    onPrimary = OnDuoGreen,
-    primaryContainer = DuoGreenContainer,
-    onPrimaryContainer = DuoGreenShadow,
+    primary = DuoLightGreen,
+    onPrimary = OnDuoLightGreen,
+    primaryContainer = DuoLightGreenContainer,
+    onPrimaryContainer = DuoLightGreenShadow,
     secondary = DuoBlue,
-    onSecondary = OnDuoGreen,
+    onSecondary = Color.White,
     secondaryContainer = DuoBlueContainer,
     onSecondaryContainer = DuoBlueShadow,
     tertiary = DuoGold,
